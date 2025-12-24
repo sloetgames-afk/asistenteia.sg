@@ -1,32 +1,42 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { getFirestore, collection, addDoc, serverTimestamp } from "firebase/firestore";
-
-const firebaseConfig = { /* Tus credenciales de Firebase */ };
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// 1. Función para enviar mensaje y crear chat
-async function sendMessage(text) {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    // Si es el primer mensaje, podrías crear un documento de "Chat" primero
-    const chatRef = await addDoc(collection(db, "chats"), {
-        userId: user.uid,
-        title: text.substring(0, 20),
-        createdAt: serverTimestamp()
-    });
-
-    // Guardar el mensaje
-    await addDoc(collection(db, "chats", chatRef.id, "messages"), {
-        text: text,
-        sender: "user",
-        createdAt: serverTimestamp()
-    });
+// Abrir/Cerrar Menú
+function toggleMenu() {
+    document.getElementById('sidebar').classList.toggle('active');
 }
 
+// Abrir Configuración
+function openConfig() {
+    document.getElementById('configModal').style.display = 'flex';
+}
+
+function closeConfig() {
+    document.getElementById('configModal').style.display = 'none';
+}
+
+// Cambiar Tema
+function changeTheme(theme) {
+    document.body.className = theme + '-theme';
+}
+
+// Lógica de Envío de Mensajes
+const sendBtn = document.getElementById('sendBtn');
+const userInput = document.getElementById('userInput');
+const chatBox = document.getElementById('chat-box');
+
+sendBtn.onclick = () => {
+    if(userInput.value.trim() !== "") {
+        // Crear mensaje del usuario
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'msg user';
+        msgDiv.textContent = userInput.value;
+        chatBox.appendChild(msgDiv);
+        
+        // Limpiar input y scroll
+        userInput.value = "";
+        chatBox.scrollTop = chatBox.scrollHeight;
+        
+        // Aquí conectarías con Firebase y la API de Chat
+    }
+};
 // 2. Cambio de Tema (Local)
 const themeSelector = document.getElementById('theme-selector');
 themeSelector.addEventListener('change', (e) => {
