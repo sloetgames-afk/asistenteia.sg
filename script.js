@@ -1,42 +1,84 @@
-const chatWindow = document.getElementById('chat-window');
+// Importación de Firebase (Asegúrate de configurar tu consola)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "TU_API_KEY",
+    authDomain: "TU_PROYECTO.firebaseapp.com",
+    projectId: "TU_PROYECTO_ID",
+    storageBucket: "TU_PROYECTO.appspot.com",
+    messagingSenderId: "TU_ID",
+    appId: "TU_APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// Manejo de Pantallas
+window.showScreen = (id) => {
+    document.querySelectorAll('body > div').forEach(div => div.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+};
+
+// Ajuste automático de altura del input
 const userInput = document.getElementById('userInput');
-const sendBtn = document.getElementById('sendBtn');
+userInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = (this.scrollHeight) + 'px';
+});
 
-let messageHistory = [];
+// Lógica de Mensajes y Groq
+let chatHistory = [];
 
-async function handleSend() {
+async function sendMessage() {
     const text = userInput.value.trim();
-    if (!text) return;
+    if(!text) return;
 
-    // Agregar mensaje usuario a la pantalla
-    appendMessage('user', text);
-    userInput.value = '';
+    appendBubble('user-bubble', text);
+    userInput.value = "";
+    userInput.style.height = 'auto'; // Resetear altura
     
-    messageHistory.push({ role: "user", content: text });
+    chatHistory.push({role: "user", content: text});
 
     try {
-        const response = await fetch('/chat', {
+        const response = await fetch('/api/chat', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages: messageHistory })
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ messages: chatHistory })
         });
-        
         const data = await response.json();
-        const botText = data.choices[0].message.content;
         
-        appendMessage('bot', botText);
-        messageHistory.push({ role: "assistant", content: botText });
+        appendBubble('bot-bubble', data.content);
+        chatHistory.push(data);
     } catch (e) {
-        appendMessage('bot', "Error al conectar con Groq.");
+        appendBubble('bot-bubble', "Error de conexión.");
     }
 }
 
-function appendMessage(role, text) {
+function appendBubble(clase, contenido) {
     const div = document.createElement('div');
-    div.className = `msg ${role}-msg`;
-    div.innerText = (role === 'user' ? 'Tú: ' : 'AI: ') + text;
-    chatWindow.appendChild(div);
-    chatWindow.scrollTop = chatWindow.scrollHeight;
+    div.className = clase;
+    div.innerText = contenido;
+    const container = document.getElementById('chat-messages');
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
 }
 
-sendBtn.addEventListener('click', handleSend);
+document.getElementById('btnSend').onclick = sendMessage;
+
+// Estado de Auth
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        showScreen('chat-app');
+        document.getElementById('display-user-email').innerText = user.email;
+    } else {
+        showScreen('welcome-screen');
+    }
+});
+
+// Funciones globales
+window.logout = () => signOut(auth);
+window.resetChat = () => {
+    document.getElementById('chat-messages').innerHTML = "";
+    chatHistory = [];
+};
