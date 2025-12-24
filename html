@@ -2,61 +2,63 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chat App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mi Chat AI</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="dark-theme"> <nav id="sidebar" class="sidebar">
-        <button class="close-btn">Volver</button>
-        
-        <div class="menu-section">
-            <h3>Mis Chats</h3>
-            <ul id="chat-list">
-                </ul>
+<body class="dark-theme">
+
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <button onclick="toggleMenu()">✕ Volver</button>
         </div>
-
-        <div class="menu-bottom">
-            <button>Suscripción</button>
-            <button onclick="openConfig()">Configuración</button>
-        </div>
-    </nav>
-
-    <main class="chat-container">
-        <header>
-            <button id="menu-toggle">☰</button>
-            <span id="chat-title">Nuevo Chat</span>
-        </header>
-
-        <div id="messages-display">
-            </div>
-
-        <footer class="input-area">
-            <textarea id="user-input" placeholder="Escribe un mensaje..." rows="1"></textarea>
-            <button id="send-btn">➤</button>
-        </footer>
-    </main>
-
-    <div id="config-modal" class="modal">
-        <div class="modal-content">
-            <h2>Configuración</h2>
-            <label>Tema: 
-                <select id="theme-selector">
-                    <option value="light">Claro</option>
-                    <option value="dark">Oscuro</option>
-                </select>
-            </label>
-            <label>Idioma del Bot: 
-                <select id="lang-selector">
-                    <option value="es">Español</option>
-                    <option value="en">Inglés</option>
-                </select>
-            </label>
-            <hr>
-            <button onclick="editProfile()">Editar Perfil</button>
-            <button class="danger" onclick="logout()">Cerrar Sesión</button>
-            <button class="danger-v2" onclick="deleteAccount()">Eliminar Cuenta</button>
+        <div class="menu-items">
+            <button class="menu-btn">💬 Mis Chats</button>
+            <button class="menu-btn">💎 Suscripción</button>
+            <button class="menu-btn" onclick="openConfig()">⚙️ Configuración</button>
         </div>
     </div>
 
+    <div class="main-content">
+        <header>
+            <button class="icon-btn" onclick="toggleMenu()">☰</button>
+            <h3>Nuevo Chat</h3>
+        </header>
+
+        <div id="chat-box" class="chat-box">
+            <div class="msg bot">¡Hola! ¿En qué puedo ayudarte hoy?</div>
+        </div>
+
+        <div class="input-container">
+            <textarea id="userInput" placeholder="Escribe un mensaje..." rows="1"></textarea>
+            <button id="sendBtn">➤</button>
+        </div>
+    </div>
+
+    <div id="configModal" class="modal">
+        <div class="modal-content">
+            <h3>Configuración</h3>
+            <label>Tema: 
+                <select onchange="changeTheme(this.value)">
+                    <option value="dark">Oscuro</option>
+                    <option value="light">Claro</option>
+                </select>
+            </label>
+            <label>Idioma: 
+                <select>
+                    <option>Español</option>
+                    <option>Inglés</option>
+                </select>
+            </label>
+            <div class="profile-section">
+                <input type="text" placeholder="Nombre de usuario" id="username">
+                <button class="btn-danger" onclick="logout()">Cerrar Sesión</button>
+                <button class="btn-delete">Eliminar Cuenta</button>
+            </div>
+            <button onclick="closeConfig()">Cerrar</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
