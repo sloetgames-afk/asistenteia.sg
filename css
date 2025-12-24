@@ -1,0 +1,30 @@
+.input-area {
+    display: flex;
+    padding: 10px;
+    background: var(--bg-color);
+    border-top: 1px solid #ccc;
+    position: sticky;
+    bottom: 0;
+}
+
+#user-input {
+    flex: 1;
+    border-radius: 20px;
+    padding: 10px 15px;
+    resize: none;
+    max-height: 150px;
+    font-size: 16px; /* Evita zoom automático en iOS */
+}
+
+.sidebar {
+    position: fixed;
+    left: -100%; /* Oculto por defecto */
+    width: 80%;
+    height: 100%;
+    transition: 0.3s;
+    z-index: 1000;
+}
+
+.sidebar.active {
+    left: 0;
+}
