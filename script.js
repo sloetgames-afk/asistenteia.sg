@@ -1,44 +1,42 @@
-// Abrir/Cerrar Menú
-function toggleMenu() {
-    document.getElementById('sidebar').classList.toggle('active');
-}
-
-// Abrir Configuración
-function openConfig() {
-    document.getElementById('configModal').style.display = 'flex';
-}
-
-function closeConfig() {
-    document.getElementById('configModal').style.display = 'none';
-}
-
-// Cambiar Tema
-function changeTheme(theme) {
-    document.body.className = theme + '-theme';
-}
-
-// Lógica de Envío de Mensajes
-const sendBtn = document.getElementById('sendBtn');
+const chatWindow = document.getElementById('chat-window');
 const userInput = document.getElementById('userInput');
-const chatBox = document.getElementById('chat-box');
+const sendBtn = document.getElementById('sendBtn');
 
-sendBtn.onclick = () => {
-    if(userInput.value.trim() !== "") {
-        // Crear mensaje del usuario
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'msg user';
-        msgDiv.textContent = userInput.value;
-        chatBox.appendChild(msgDiv);
+let messageHistory = [];
+
+async function handleSend() {
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    // Agregar mensaje usuario a la pantalla
+    appendMessage('user', text);
+    userInput.value = '';
+    
+    messageHistory.push({ role: "user", content: text });
+
+    try {
+        const response = await fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: messageHistory })
+        });
         
-        // Limpiar input y scroll
-        userInput.value = "";
-        chatBox.scrollTop = chatBox.scrollHeight;
+        const data = await response.json();
+        const botText = data.choices[0].message.content;
         
-        // Aquí conectarías con Firebase y la API de Chat
+        appendMessage('bot', botText);
+        messageHistory.push({ role: "assistant", content: botText });
+    } catch (e) {
+        appendMessage('bot', "Error al conectar con Groq.");
     }
-};
-// 2. Cambio de Tema (Local)
-const themeSelector = document.getElementById('theme-selector');
-themeSelector.addEventListener('change', (e) => {
-    document.body.className = e.target.value === 'dark' ? 'dark-theme' : 'light-theme';
-});
+}
+
+function appendMessage(role, text) {
+    const div = document.createElement('div');
+    div.className = `msg ${role}-msg`;
+    div.innerText = (role === 'user' ? 'Tú: ' : 'AI: ') + text;
+    chatWindow.appendChild(div);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+sendBtn.addEventListener('click', handleSend);
