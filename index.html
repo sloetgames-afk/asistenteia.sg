@@ -1,78 +1,212 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Asistente IA - Sloet Games</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="theme-color" content="#7c3aed">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="LYRA AI">
+    <meta name="application-name" content="LYRA AI">
+    
+    <title>LYRA AI | Asistente Profesional</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="antialiased selection:bg-primary selection:text-white overflow-hidden">
 
-    <div id="welcome-screen" class="gradient-bg">
-        <div class="logo-placeholder">A</div>
-        <h1>Asistente IA</h1>
-        <p>Sloet Games Tecnologie</p>
-        <div class="auth-box">
-            <button class="btn-black" onclick="showScreen('login-screen')">Iniciar Sesión</button>
-            <button class="btn-white" onclick="showScreen('register-screen')">Registrarte</button>
-        </div>
-    </div>
+    <div id="mobileOverlay" class="mobile-overlay fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0" style="display: none;"></div>
 
-    <div id="login-screen" class="gradient-bg hidden">
-        <button class="back-arrow" onclick="showScreen('welcome-screen')">⬅</button>
-        <h2>Inicia sesión</h2>
-        <div class="form-group">
-            <label>Email</label>
-            <input type="email" id="login-email">
-            <label>Contraseña</label>
-            <input type="password" id="login-password">
-        </div>
-        <button class="btn-purple" id="btnLogin">Iniciar</button>
-    </div>
-
-    <div id="register-screen" class="gradient-bg hidden">
-        <button class="back-arrow" onclick="showScreen('welcome-screen')">⬅</button>
-        <h2>Crea una cuenta</h2>
-        <div class="form-group">
-            <label>Email</label>
-            <input type="email" id="reg-email">
-            <label>Contraseña</label>
-            <input type="password" id="reg-password">
-            <label>Confirmar Contraseña</label>
-            <input type="password" id="reg-confirm">
-        </div>
-        <button class="btn-purple" id="btnRegister">Iniciar</button>
-    </div>
-
-    <div id="chat-app" class="chat-layout hidden">
-        <nav id="sidebar" class="sidebar">
-            <button class="new-chat" onclick="resetChat()">📝 Nuevo Chat</button>
-            <div class="chat-list">
-                <p>Mis Chats</p>
-                <div id="history-container"></div>
-            </div>
-            <div class="sidebar-user">
-                <span id="display-user-email"></span>
-                <button onclick="logout()">Cerrar Sesión</button>
-            </div>
-        </nav>
-
-        <main class="chat-main">
-            <header>
-                <button onclick="toggleSidebar()">☰</button>
-            </header>
+    <div class="flex h-screen w-full relative">
+        
+        <aside id="sidebar" class="sidebar fixed inset-y-0 left-0 z-50 w-[280px] h-full flex flex-col border-r border-white/5 bg-surface-dark transition-transform duration-300 -translate-x-full md:translate-x-0 md:relative md:w-[320px] shadow-2xl md:shadow-none">
             
-            <div id="chat-messages" class="chat-messages"></div>
+            <div class="h-16 flex items-center justify-between px-4 border-b border-white/5 bg-surface-dark/50 backdrop-blur-md">
+                <div class="flex items-center gap-3">
+                    <div class="relative group">
+                        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform duration-300">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                        </div>
+                        <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-surface-dark animate-pulse"></div>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg tracking-tight bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">LYRA AI</h1>
+                        <p class="text-[10px] font-medium text-white/40 uppercase tracking-widest">Professional</p>
+                    </div>
+                </div>
+                <button id="closeSidebar" class="md:hidden p-2 text-white/50 hover:text-white transition-colors rounded-lg hover:bg-white/5">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
 
-            <div class="chat-input-area">
-                <div class="input-pill">
-                    <textarea id="userInput" placeholder="Escribir..." rows="1"></textarea>
-                    <button id="btnSend">➤</button>
+            <div class="p-4">
+                <button onclick="startNewChat()" class="w-full group relative flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-primary/10 border border-white/5 hover:border-primary/50 rounded-xl transition-all duration-300 overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    </div>
+                    <span class="font-medium text-sm text-white/90 group-hover:text-white z-10">Nueva Conversación</span>
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto custom-scrollbar px-3 py-2 space-y-6">
+                <div>
+                    <h3 class="px-3 text-xs font-semibold text-white/30 uppercase tracking-wider mb-2">Reciente</h3>
+                    <div id="historyList" class="space-y-1">
+                        </div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-white/5 bg-surface-dark/50">
+                <button id="userMenuBtn" class="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 transition-colors group">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 p-[2px]">
+                        <img src="https://ui-avatars.com/api/?name=User&background=random" alt="User" class="rounded-full w-full h-full object-cover border-2 border-surface-dark">
+                    </div>
+                    <div class="flex-1 text-left min-w-0">
+                        <p id="userNameDisplay" class="text-sm font-medium text-white/90 truncate group-hover:text-white">Invitado</p>
+                        <p class="text-xs text-white/40 truncate">v2.0.0-pro</p>
+                    </div>
+                    <svg class="w-4 h-4 text-white/30 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col h-full bg-[#0f1115] relative min-w-0">
+            
+            <header class="h-16 flex items-center justify-between px-4 md:px-6 border-b border-white/5 bg-[#0f1115]/80 backdrop-blur-xl z-30 absolute top-0 left-0 right-0">
+                <div class="flex items-center gap-3">
+                    <button id="toggleSidebar" class="md:hidden p-2 -ml-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+                    </button>
+                    <div class="flex items-center gap-2 md:hidden">
+                        <span class="font-bold text-white tracking-tight">LYRA</span>
+                    </div>
+                    
+                    <div class="hidden md:flex items-center bg-white/5 rounded-lg p-1 border border-white/5">
+                        <button class="px-3 py-1.5 rounded-md bg-white/10 text-xs font-medium text-white shadow-sm border border-white/5">
+                            Llama 3 70B
+                        </button>
+                        <button class="px-3 py-1.5 rounded-md text-xs font-medium text-white/40 hover:text-white/80 transition-colors">
+                            Mixtral 8x7B
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button id="themeToggle" class="p-2 text-white/40 hover:text-white transition-colors rounded-lg hover:bg-white/5" title="Cambiar tema">
+                        <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                    </button>
+                    
+                    <button class="p-2 text-white/40 hover:text-white transition-colors rounded-lg hover:bg-white/5">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </button>
+                </div>
+            </header>
+
+            <div id="chatContainer" class="flex-1 overflow-y-auto custom-scrollbar scroll-smooth pt-20 pb-32 px-4">
+                <div class="max-w-3xl mx-auto space-y-6" id="messagesList">
+                    
+                    <div id="welcomeScreen" class="flex flex-col items-center justify-center min-h-[60vh] text-center px-4 animate-fade-in">
+                        <div class="w-20 h-20 mb-8 rounded-2xl bg-gradient-to-br from-primary to-secondary p-0.5 shadow-2xl shadow-primary/30 animate-float">
+                            <div class="w-full h-full rounded-2xl bg-[#0f1115] flex items-center justify-center">
+                                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            </div>
+                        </div>
+                        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">¿En qué puedo ayudarte hoy?</h2>
+                        <p class="text-white/40 max-w-md text-lg leading-relaxed">
+                            Soy Lyra, tu asistente de IA profesional. Puedo ayudarte con código, análisis, escritura creativa y más.
+                        </p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-10 w-full max-w-2xl">
+                            <button onclick="setInput('Explícame la computación cuántica')" class="text-left p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-primary/30 transition-all group">
+                                <span class="block text-sm font-medium text-white mb-1 group-hover:text-primary transition-colors">🧠 Explicar conceptos</span>
+                                <span class="block text-xs text-white/40">Computación cuántica en términos simples</span>
+                            </button>
+                            <button onclick="setInput('Escribe un poema sobre el futuro')" class="text-left p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-primary/30 transition-all group">
+                                <span class="block text-sm font-medium text-white mb-1 group-hover:text-primary transition-colors">✨ Creatividad</span>
+                                <span class="block text-xs text-white/40">Escribir un poema o historia corta</span>
+                            </button>
+                            <button onclick="setInput('Analiza este código Python')" class="text-left p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-primary/30 transition-all group">
+                                <span class="block text-sm font-medium text-white mb-1 group-hover:text-primary transition-colors">💻 Código</span>
+                                <span class="block text-xs text-white/40">Depurar o explicar fragmentos de código</span>
+                            </button>
+                            <button onclick="setInput('Resumen de noticias tecnológicas')" class="text-left p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-primary/30 transition-all group">
+                                <span class="block text-sm font-medium text-white mb-1 group-hover:text-primary transition-colors">📰 Resumen</span>
+                                <span class="block text-xs text-white/40">Sintetizar información compleja</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#0f1115] via-[#0f1115] to-transparent pt-10 pb-6 px-4 z-20">
+                <div class="max-w-3xl mx-auto">
+                    <div id="typingIndicator" class="hidden mb-4 pl-4">
+                        <div class="flex items-center gap-1.5 p-3 rounded-2xl bg-white/5 w-fit border border-white/5">
+                            <div class="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce"></div>
+                            <div class="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce delay-100"></div>
+                            <div class="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce delay-200"></div>
+                            <span class="text-xs text-white/40 ml-2 font-medium">Lyra está escribiendo...</span>
+                        </div>
+                    </div>
+
+                    <div class="relative group">
+                        <div class="absolute -inset-0.5 bg-gradient-to-r from-primary to-secondary rounded-2xl opacity-20 group-hover:opacity-40 transition duration-500 blur"></div>
+                        <div class="relative flex items-end gap-2 bg-[#1a1d24] p-3 rounded-xl border border-white/5 shadow-2xl">
+                            
+                            <button class="p-2 text-white/40 hover:text-white hover:bg-white/5 rounded-lg transition-colors flex-shrink-0" title="Adjuntar archivo">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                            </button>
+
+                            <textarea id="userInput" rows="1" 
+                                class="w-full bg-transparent text-white placeholder-white/30 text-sm md:text-base resize-none focus:outline-none max-h-48 py-2 custom-scrollbar"
+                                placeholder="Escribe un mensaje a Lyra... (Shift + Enter para nueva línea)"
+                                oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"></textarea>
+
+                            <button id="sendBtn" class="p-2 bg-white/10 text-white/40 hover:text-white hover:bg-primary rounded-lg transition-all duration-300 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-center text-[10px] text-white/20 mt-3 font-medium">
+                        Lyra AI puede cometer errores. Verifica la información importante.
+                    </p>
                 </div>
             </div>
         </main>
     </div>
 
-    <script type="module" src="app.js"></script>
+    <div id="settingsModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="toggleSettings()"></div>
+        <div class="relative bg-surface-dark w-full max-w-md rounded-2xl border border-white/10 shadow-2xl p-6 transform transition-all scale-95 opacity-0 animate-in fade-in zoom-in duration-200">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-bold text-white">Configuración</h3>
+                <button onclick="toggleSettings()" class="text-white/40 hover:text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            </div>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-3 rounded-lg bg-white/5">
+                    <span class="text-sm text-white">Notificaciones de sonido</span>
+                    <div class="w-10 h-5 bg-primary rounded-full relative cursor-pointer"><div class="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></div></div>
+                </div>
+                </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
